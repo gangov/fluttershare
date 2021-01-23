@@ -1,6 +1,6 @@
 # fluttershare
 
-A new Flutter project that takes on Reed Barger's Social Media Network and tries to extend it with new features. This project will work with the latest Flutter   1.25.0-8.3.pre beta version (web-support).
+A new Flutter project that takes on [Reed Barger's Social Media Network](https://github.com/reedbarger/fluttershare) and tries to extend it with new features. This project will work with the latest Flutter   1.25.0-8.3.pre beta version (web-support).
 
 ## Getting Started
 
