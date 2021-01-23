@@ -1,8 +1,12 @@
 # fluttershare
 
-A new Flutter project.
+A new Flutter project that takes on Reed Barger's Social Media Network and tries to extend it with new features. This project will work with the latest Flutter   1.25.0-8.3.pre beta version (web-support).
 
 ## Getting Started
+
+Download this repo, enter the root of the project and run 'flutter pub get'; 
+
+Hint for conflicts between different plugin versions - try and match the different versions by date they were released in pub.dev
 
 This project is a starting point for a Flutter application.
 
