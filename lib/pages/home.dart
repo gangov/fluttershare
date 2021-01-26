@@ -43,7 +43,6 @@ class _HomeState extends State<Home> {
 
   handleSignIn(GoogleSignInAccount account) {
     if (account != null) {
-      print('User signed in: $account');
       setState(() {
         isAuth = true;
       });
