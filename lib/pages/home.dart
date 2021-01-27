@@ -1,6 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttershare/models/user.dart';
 import 'package:fluttershare/pages/activity_feed.dart';
+import 'package:fluttershare/pages/create_account.dart';
 import 'package:fluttershare/pages/profile.dart';
 import 'package:fluttershare/pages/search.dart';
 import 'package:fluttershare/pages/timeline.dart';
@@ -12,6 +15,10 @@ final GoogleSignIn googleSignIn = GoogleSignIn(
   hostedDomain: "",
   clientId: "",
 );
+final CollectionReference usersRef =
+    FirebaseFirestore.instance.collection('users');
+final DateTime timeStamp = DateTime.now();
+User currentUser;
 
 class Home extends StatefulWidget {
   @override
@@ -43,6 +50,7 @@ class _HomeState extends State<Home> {
 
   handleSignIn(GoogleSignInAccount account) {
     if (account != null) {
+      createUserInFireStore();
       setState(() {
         isAuth = true;
       });
@@ -51,6 +59,31 @@ class _HomeState extends State<Home> {
         isAuth = false;
       });
     }
+  }
+
+  createUserInFireStore() async {
+    final GoogleSignInAccount user = googleSignIn.currentUser;
+
+    DocumentSnapshot doc = await usersRef.doc(user.id).get();
+
+    if (!doc.exists) {
+      final username = await Navigator.push(
+          context, MaterialPageRoute(builder: (context) => CreateAccount()));
+
+      usersRef.doc(user.id).set({
+        "id": user.id,
+        "username": username,
+        "photoUrl": user.photoUrl,
+        "email": user.email,
+        "displayName": user.displayName,
+        "bio": "",
+        "timestamp": timeStamp,
+      });
+
+      doc = await usersRef.doc(user.id).get();
+    }
+
+    currentUser = User.fromDocument(doc);
   }
 
   @override
@@ -85,7 +118,11 @@ class _HomeState extends State<Home> {
     return Scaffold(
       body: PageView(
         children: <Widget>[
-          Timeline(),
+          // Timeline(),
+          RaisedButton(
+            onPressed: logout,
+            child: Text("Logout"),
+          ),
           ActivityFeed(),
           Upload(),
           Search(),
