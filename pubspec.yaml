@@ -31,6 +31,7 @@ dependencies:
   firebase_messaging: ^7.0.3
   google_sign_in: ^4.5.9
   geolocator: ^6.1.14
+  geocoding: ^1.0.5
   uuid: ^2.2.2
   image: ^2.1.19
   animator: ^2.0.2
