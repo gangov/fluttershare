@@ -1,4 +1,6 @@
+import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -34,6 +36,8 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
+  FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   bool isAuth = false;
   PageController pageController;
   int pageIndex = 0;
@@ -47,13 +51,12 @@ class _HomeState extends State<Home> {
     googleSignIn.onCurrentUserChanged.listen((GoogleSignInAccount account) {
       handleSignIn(account);
     }, onError: (err) {
-      print('Error signing in: $err');
     });
 
     // reauthentication
     googleSignIn.signInSilently(suppressErrors: false).then((account) {
       handleSignIn(account);
-    }).catchError((onError) => print("Error signing in: $onError"));
+    });
   }
 
   handleSignIn(GoogleSignInAccount account) async {
@@ -62,11 +65,42 @@ class _HomeState extends State<Home> {
       setState(() {
         isAuth = true;
       });
+      configurePushNotifications();
     } else {
       setState(() {
         isAuth = false;
       });
     }
+  }
+
+  configurePushNotifications() {
+    final GoogleSignInAccount user = googleSignIn.currentUser;
+
+    if (Platform.isIOS) getiOSPermission();
+
+    _firebaseMessaging.getToken().then((token) {
+      usersRef.doc(user.id).update({"androidNotificationToken": token});
+    });
+
+    _firebaseMessaging.configure(
+      onMessage: (Map<String, dynamic>message) async {
+        final String recipientId = message['data']['recipient'];
+        final String body = message['notification']['body'];
+        if (recipientId == user.id) {
+          SnackBar snackBar = SnackBar(content: Text(body, overflow: TextOverflow.ellipsis,));
+          // ignore: deprecated_member_use
+          _scaffoldKey.currentState.showSnackBar(snackBar);
+        }
+      },
+    );
+  }
+
+  getiOSPermission() {
+    _firebaseMessaging.requestNotificationPermissions(
+        IosNotificationSettings(alert: true, badge: true, sound: true));
+
+    _firebaseMessaging.onIosSettingsRegistered.listen((settings) {
+    });
   }
 
   createUserInFireStore() async {
@@ -130,6 +164,7 @@ class _HomeState extends State<Home> {
 
   Scaffold buildAuthScreen() {
     return Scaffold(
+      key: _scaffoldKey,
       body: PageView(
         children: <Widget>[
           Timeline(currentUser),
@@ -145,7 +180,9 @@ class _HomeState extends State<Home> {
       bottomNavigationBar: CupertinoTabBar(
         currentIndex: pageIndex,
         onTap: onTap,
-        activeColor: Theme.of(context).primaryColor,
+        activeColor: Theme
+            .of(context)
+            .primaryColor,
         items: [
           BottomNavigationBarItem(
             icon: Icon(Icons.whatshot),
@@ -182,8 +219,12 @@ class _HomeState extends State<Home> {
             begin: Alignment.topRight,
             end: Alignment.bottomLeft,
             colors: [
-              Theme.of(context).accentColor,
-              Theme.of(context).primaryColor,
+              Theme
+                  .of(context)
+                  .accentColor,
+              Theme
+                  .of(context)
+                  .primaryColor,
             ],
           ),
         ),
@@ -205,7 +246,7 @@ class _HomeState extends State<Home> {
                 decoration: BoxDecoration(
                   image: DecorationImage(
                       image:
-                          AssetImage("assets/images/google_signin_button.png"),
+                      AssetImage("assets/images/google_signin_button.png"),
                       fit: BoxFit.cover),
                 ),
               ),
