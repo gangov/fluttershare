@@ -56,9 +56,9 @@ class _HomeState extends State<Home> {
     }).catchError((onError) => print("Error signing in: $onError"));
   }
 
-  handleSignIn(GoogleSignInAccount account) {
+  handleSignIn(GoogleSignInAccount account) async {
     if (account != null) {
-      createUserInFireStore();
+      await createUserInFireStore();
       setState(() {
         isAuth = true;
       });
